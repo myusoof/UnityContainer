@@ -1,0 +1,147 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<c:Config xmlns:c="http://schemas.trizetto.com/2014/03/06/TestConfig.xsd">
+    <!-- Test execution environment runtime configuration settings -->
+    <Runtime>
+
+        <!-- Test timeout -->
+        <Timeouts testTimeout="600000" c:final="true"/>
+
+        <!-- 
+            Global configuration includes, this is a protected section. This configuration is loaded
+            before a feature would have a chance to append anything to this list or override it.
+        -->
+        <ConfigImports c:key="fileName" c:final="true">
+            <Import fileName="EnvironmentConfig.xml"/>
+            <Import fileName="EnvironmentMemberConfig.xml"/>
+        </ConfigImports>
+
+        <!-- 
+            The list of registered data series resolvers. Feature configuration file(s) may add to 
+            this list by merging new data. A single copy of each resolver is created for feature.
+            Standard resolvers are protected.
+        -->
+        <DataSeriesResolvers c:key="prefix">
+            <Resolver prefix="cfg" c:final="true" type="Trizetto.CareAdvance.Automation.Tests.Infrastructure.Data.ConfigDataResolver, Trizetto.CareAdvance.Automation.Tests.Infrastructure"/>
+        </DataSeriesResolvers>
+
+        <!-- 
+            The list of registered data token resolvers. Feature configuration file(s) may add to 
+            this list by merging new data. A copy of each resolver is created for every scenario. 
+            Standard resolvers are protected.
+        -->
+        <DataResolvers c:key="prefix">
+            <Resolver prefix="cfg" c:final="true" type="Trizetto.CareAdvance.Automation.Tests.Infrastructure.Data.ConfigDataResolver, Trizetto.CareAdvance.Automation.Tests.Infrastructure"/>
+            <Resolver prefix="env" c:final="true" type="Trizetto.CareAdvance.Automation.Tests.Infrastructure.Data.EnvironmentDataTokenResolver, Trizetto.CareAdvance.Automation.Tests.Infrastructure"/>
+            <Resolver prefix="rnd" c:final="true" type="Trizetto.CareAdvance.Automation.Tests.Infrastructure.Data.RandomDataTokenResolver, Trizetto.CareAdvance.Automation.Tests.Infrastructure"/>
+            <Resolver prefix="ctx" c:final="true" type="Trizetto.CareAdvance.Automation.Tests.Infrastructure.Data.ContextDataTokenResolver, Trizetto.CareAdvance.Automation.Tests.Infrastructure"/>
+            <Resolver prefix="str" c:final="true" type="Trizetto.CareAdvance.Automation.Tests.Infrastructure.Data.StringDataTokenResolver, Trizetto.CareAdvance.Automation.Tests.Infrastructure"/>
+        </DataResolvers>
+
+        <!-- 
+            Browser configurations. This is currently protected, but we can unlock it
+            to let some features run with different browser configurations. 
+               'commandTimeout' Added to support long wait on first login after deployment
+               
+          log files are stored in runners in c:\Users\AutoTest\AppData\Local\VSEQT\QTAgent
+        -->
+        <Browsers current="InternetExplorer" c:key="name" c:final="true">
+            <Browser name="InternetExplorer" type="OpenQA.Selenium.IE.InternetExplorerDriver, WebDriver" c:key="name">
+              <Parameter name="internetExplorerDriverService" type="manual" c:key="name">
+                <Property name="internetExplorerDriverServerDirectory" value="." c:key="name"/>
+                <Property name="logFile" value="iedriver_{0}.log" c:key="name"/>
+                <Property name="loggingLevel" value="Error" c:key="name"/>                
+              </Parameter>
+              <Parameter name="options" type="OpenQA.Selenium.IE.InternetExplorerOptions, WebDriver" c:key="name">
+                <Property name="RequireWindowFocus" value="true" />
+                <Property name="IntroduceInstabilityByIgnoringProtectedModeSettings" value="true" />
+              </Parameter>
+              <Parameter name="commandTimeout" type="System.TimeSpan" value="00:02:00" />
+            </Browser>
+            <Browser name="Firefox" type="OpenQA.Selenium.Firefox.FirefoxDriver, WebDriver" c:key="name">
+                <!-- Specify profile name -->
+            </Browser>
+            <!-- ... -->
+        </Browsers>
+
+        <!-- 
+            Process names that should be killed before a feature.
+            This section is ignored for development mode.
+        -->
+        <EnvironmentCleanup c:final="true">
+            <KillProcess waitTimeout="2000" c:key="name">
+                <Process name="IExplore"/>
+                <Process name="IEDriverServer"/>
+                <Process name="WerFault"/>
+            </KillProcess>
+        </EnvironmentCleanup>
+
+        <!-- Test video recording settings. Disabled by default for all runtimes. Protected -->
+        <VideoRecording enabled="true" ignoreCategory="DisableVideo" bitRate="512" frameRate="4" c:final="true"/>
+
+        <!-- Configuration for 3rd party tools. -->
+        <Tools c:key="name">
+            <Tool name="PSExec" path="PsExec.exe"/>
+        </Tools>
+
+    </Runtime>
+
+    <!-- Configuration overrides for all local development environments -->
+    <c:EnvironmentConfig name="Local">
+        <!-- Enables so called development mode and disables killing IE processes between features. -->
+        <Runtime developmentMode="true"  >
+
+          <Trace debugEnabled="false"> </Trace>
+            <!-- Disable test timeouts for local runs -->
+            <Timeouts testTimeout="-1"/>
+
+            <Browsers>
+                <Browser name="InternetExplorer">
+                    <!-- Change IE Web Driver process location for local runs -->
+                  <Parameter name="internetExplorerDriverService"  type="manual">
+                    <Property name="internetExplorerDriverServerDirectory" value="..\..\..\scripts"  c:key="name"/>
+                    <Property name="loggingLevel" value="Error" c:key="name"/>
+                  </Parameter>
+                    
+                    <!-- Disable browser focus requirement for local runs -->
+                    <Parameter name="options">
+                        <Property name="RequireWindowFocus" value="true" />
+                        <Property name="IntroduceInstabilityByIgnoringProtectedModeSettings" value="true" />
+                    </Parameter>
+                </Browser>
+            </Browsers>
+
+            <!-- Disable video recording for local runs -->
+            <VideoRecording enabled="false"/>
+
+            <!-- Configuration for 3rd party tools. -->
+            <Tools>
+                <Tool name="PSExec" path="..\..\..\scripts\PsExec.exe"/>
+            </Tools>
+
+        </Runtime>
+    </c:EnvironmentConfig>
+
+    <!-- Common config for enabling "require window focus" for a local run. Add you computer name to the list of matches -->
+    <c:EnvironmentConfig name="Common Config - RequireWindowFocus" enabled="true">
+        <c:Matches name="Local-BO-W-PLABOVICH"/>
+        <!-- <c:Matches name="Local-YOURCOMPUTERNAME"/> -->
+        <Runtime>
+            <Browsers>
+                <Browser name="InternetExplorer">
+                    <Parameter name="options">
+                        <Property name="RequireWindowFocus" value="true" />
+                    </Parameter>
+                </Browser>
+            </Browsers>
+        </Runtime>
+    </c:EnvironmentConfig>
+
+    <!-- Temporary disable video recording for 5.2 weekly tests until it's more stable-->
+    <c:EnvironmentConfig name="Disables video for 5.2 weekly" enabled="false">
+        <c:Matches name="Agent-(.*)-CAE52_(.*)_Weekly"/>
+        <Runtime>
+            <VideoRecording enabled="false"/>
+        </Runtime>
+    </c:EnvironmentConfig>
+
+</c:Config>
